@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+    "sourceMap": true, 
+    "outDir": "dist", // compiled ts file
+    "strict": true,   // error , null handling
+    "lib": ["esnext"], //js versrion lestes
+    "esModuleInterop": true
+   
+    }
+}

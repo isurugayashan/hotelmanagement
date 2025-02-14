@@ -1,28 +1,38 @@
 //All the business logic inclde application folder
-import Booking from "../infrastructure/schemas/Booking.js";
+import { NextFunction, Request, Response } from "express";
+import Booking from "../infrastructure/schemas/Booking";
 
-export const getAllBookings = async (req, res) =>{
+export const getAllBookings = async (req : Request, res: Response, next: NextFunction) =>{
     
-    const Bookings = await Booking.find()
-    res.status(200).json(Bookings);
+    try {
+        const Bookings = await Booking.find()
+        res.status(200).json(Bookings);
+        
+    } catch (error) {
+        next(error);
+    }
+   
 }
 
 
-export const  getBookingForHotel = async (req, res) =>{
+export const  getBookingForHotel = async (req : Request, res: Response, next: NextFunction) =>{
+   
+   try {
     const hotelId = req.params.hotelId;
-    const bookings = await Booking.find( {hotelId} ).populate({
-        path :"userId", model : "User" , as : "user"
-    })
+    const bookings = await Booking.find( {hotelId} ).populate("userId");
     res.status(200).json(bookings);
-    // console.log(hotelID);
     
-    // ;
-    // res.status(200).json (bookings);
-    // return;
+   } catch (error) {
+    next(error);
+   }
+
+   
 }
 
-export const createBooking = async (req, res) =>{
+export const createBooking = async (req : Request, res: Response, next: NextFunction) =>{
 
+  try {
+    
     const booking = req.body;
    
     //Validate the request
@@ -48,22 +58,36 @@ export const createBooking = async (req, res) =>{
     res.status(201).json({
         message: "Booking added successfully",
     });
+
+  } catch (error) {
+    next(error);
+  }
+   
 }
 
 
 
-export const deleteBooking = async (req, res) =>{
-        const BookingId = req.params.id;
+export const deleteBooking = async (req : Request, res: Response, next: NextFunction) =>{
+   
+    try {
+    const BookingId = req.params.id;
 
-        await Booking.findByIdAndDelete(BookingId);
+    await Booking.findByIdAndDelete(BookingId);
     // Respond with a success message
     res.status(200).json({ message: `Booking ${BookingId}deleted successfully.` });
 
+        
+    } catch (error) {
+        next(error);
+    }  
+    
+  
 }
 
 
-export const updateBooking = async(req, res) =>{
+export const updateBooking = async(req : Request, res: Response, next: NextFunction) =>{
 
+   try {
     const BookingId = req.params.id;
     const updatedBooking = req.body;
     //Validate the request
@@ -84,5 +108,11 @@ export const updateBooking = async(req, res) =>{
         message: `Booking ${BookingId} updated successfully`,
     });
 
+    
+   } catch (error) {
+    next(error);
+   }
+   
+    
 
 }

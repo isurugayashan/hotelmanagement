@@ -1,6 +1,8 @@
 //All the business logic inclde application folder
-
-import Hotel from "../infrastructure/schemas/hotel.js";
+import { NextFunction, Request, Response } from "express";
+import Hotel from "../infrastructure/schemas/Hotel";
+import NotFoundError from "../domian/errors/not-found-error";
+import ValidationError from "../domian/errors/validation-error";
 
 // const hotels = [
 //     {
@@ -101,38 +103,47 @@ import Hotel from "../infrastructure/schemas/hotel.js";
 // ];
  
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve , ms));
 
-export const getAllHotels = async (req, res) =>{
+export const getAllHotels = async (req : Request, res: Response, next: NextFunction) =>{
     
+    try {
+        
     const hotels = await Hotel.find({})
+    await sleep(5000);
     res.status(200).json(hotels);
-}
 
-
-export const getHotelById = async (req, res) =>{
-    const hotelId = req.params.id;
-    const hotel = await Hotel.findById(hotelId);
-    if(!hotel){
-        res.status(404).json({
-            message: "Hotel not found",
-        });
-        return;
+    } catch (error) {
+        next(error);
     }
-    res.status(200).json(hotel);
 }
 
-export const createHotel = async (req, res) =>{
 
+export const getHotelById = async (req : Request, res: Response , next: NextFunction) =>{
+
+    try {
+        const hotelId = req.params.id;
+        const hotel = await Hotel.findById(hotelId);
+        if(!hotel){
+            throw new NotFoundError("Hotel not Found");
+        }
+        res.status(200).json(hotel);
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const createHotel = async (req : Request, res: Response, next: NextFunction) =>{
+
+try {
     const hotel = req.body;
     //Validate the request
 
     if(
         !hotel.name || !hotel.location || !hotel.rating || !hotel.reviews || !hotel.image || !hotel.price || !hotel.description
     ){
-        res.status(400).json({
-            message: "Please enter all required fields",
-        });
-        return;
+        throw new ValidationError("Invalid hotel data");
     }
 
     //Add hotel
@@ -150,33 +161,39 @@ export const createHotel = async (req, res) =>{
     res.status(201).json({
         message: "Hotel added successfully",
     });
+    
+} catch (error) {
+    next(error);
+}   
 }
 
 
 
-export const deleteHotel = async (req, res) =>{
-        const hotelId = req.params.id;
+export const deleteHotel = async (req : Request, res: Response, next: NextFunction) =>{
+        try {
+      const hotelId = req.params.id;
 
         await Hotel.findByIdAndDelete(hotelId);
     // Respond with a success message
     res.status(200).json({ message: `Hotel ${hotelId}deleted successfully.` });
-
+            
+        } catch (error) {
+            next(error);
+        }
 }
 
 
-export const updateHotel = async(req, res) =>{
+export const updateHotel = async(req : Request, res: Response, next: NextFunction) =>{
 
-    const hotelId = req.params.id;
+    try {
+        const hotelId = req.params.id;
     const updatedHotel = req.body;
     //Validate the request
 
     if(
         !updatedHotel.name || !updatedHotel.location || !updatedHotel.rating || !updatedHotel.reviews || !updatedHotel.image || !updatedHotel.price || !updatedHotel.description
     ){
-        res.status(400).json({
-            message: "Please enter all required fields",
-        });
-        return;
+        throw new ValidationError("Invalid hotel data");
     }
 
 
@@ -185,6 +202,9 @@ export const updateHotel = async(req, res) =>{
     res.status(201).json({
         message: `Hotel ${hotelId} updated successfully`,
     });
-
+        
+    } catch (error) {
+        next(error);
+    }
 
 }

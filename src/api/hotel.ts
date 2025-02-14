@@ -1,9 +1,12 @@
 import express from "express";
-import { createHotel, getAllHotels, getHotelById, deleteHotel, updateHotel } from "../application/hotel.js";
+import { createHotel, getAllHotels, getHotelById, deleteHotel, updateHotel } from "../application/hotel";
 
 const hotelsRouter = express.Router();
 
-hotelsRouter.get("/", getAllHotels);
+hotelsRouter.get("/", 
+    (req, res, next) =>{
+    next();
+},getAllHotels);
 hotelsRouter.get("/:id", getHotelById);
 hotelsRouter.post("/", createHotel);
 hotelsRouter.delete("/:id", deleteHotel);
