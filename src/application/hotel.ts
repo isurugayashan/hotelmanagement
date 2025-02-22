@@ -110,7 +110,7 @@ export const getAllHotels = async (req : Request, res: Response, next: NextFunct
     try {
         
     const hotels = await Hotel.find({})
-    await sleep(5000);
+    // await sleep(5000);
     res.status(200).json(hotels);
 
     } catch (error) {

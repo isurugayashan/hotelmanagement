@@ -5,7 +5,8 @@ import connectDB from "./infrastructure/db";
 import usersRouter from "./api/user";
 import bookingsRouter from "./api/booking";
 import cors from "cors";
-import globalErrorHanflingMiddleware from "./api/middlewares/global-error-handling-middleware";
+import globalErrorHandlingMiddleware from "./api/middlewares/global-error-handling-middleware";
+
 
 const app = express();
 
@@ -25,6 +26,6 @@ app.use("/api/hotels",hotelsRouter)
 app.use("/api/users", usersRouter)
 app.use("/api/bookings", bookingsRouter)
 
-app.use(globalErrorHanflingMiddleware)
+app.use(globalErrorHandlingMiddleware)
 app.listen(8000,() => console.log("server is running on 8000")
 )

@@ -3,14 +3,12 @@ import { createHotel, getAllHotels, getHotelById, deleteHotel, updateHotel } fro
 
 const hotelsRouter = express.Router();
 
-hotelsRouter.get("/", 
-    (req, res, next) =>{
-    next();
-},getAllHotels);
-hotelsRouter.get("/:id", getHotelById);
-hotelsRouter.post("/", createHotel);
-hotelsRouter.delete("/:id", deleteHotel);
-hotelsRouter.put("/:id", updateHotel);
+hotelsRouter.route("/").get(getAllHotels).post(createHotel);
+hotelsRouter
+  .route("/:id")
+  .get(getHotelById)
+  .put(updateHotel)
+  .delete(deleteHotel);
 
 //Aditional method
 
