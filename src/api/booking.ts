@@ -1,13 +1,15 @@
 import express from "express";
-import { createBooking, getAllBookings, getBookingForHotel, deleteBooking, updateBooking } from "../application/booking";
+import { createBooking, getAllBookings, getBookingForHotel, deleteBooking, updateBooking, getBookingForUser } from "../application/booking";
+import { isAuthenticated } from "./middlewares/authentication-middleware";
 
 const bookingsRouter = express.Router();
 
 bookingsRouter.get("/", getAllBookings);
-bookingsRouter.get("/hotels/:hotelId", getBookingForHotel);
-bookingsRouter.post("/",createBooking);
-bookingsRouter.delete("/:id", deleteBooking);
-bookingsRouter.put("/:id", updateBooking);
+bookingsRouter.get("/hotels/:hotelId", isAuthenticated,getBookingForHotel);
+bookingsRouter.get("/:userId", isAuthenticated,getBookingForUser);
+bookingsRouter.post("/",isAuthenticated, createBooking);
+bookingsRouter.delete("/:id",isAuthenticated, deleteBooking);
+bookingsRouter.put("/:id", isAuthenticated, updateBooking);
 
 //Aditional method
 

@@ -3,6 +3,8 @@ import { NextFunction, Request, Response } from "express";
 import Hotel from "../infrastructure/schemas/Hotel";
 import NotFoundError from "../domian/errors/not-found-error";
 import ValidationError from "../domian/errors/validation-error";
+import { CreateHotelDTO } from "../domian/dtos/hotel";
+import OpenAI from "openai";
 
 // const hotels = [
 //     {
@@ -137,25 +139,21 @@ export const getHotelById = async (req : Request, res: Response , next: NextFunc
 export const createHotel = async (req : Request, res: Response, next: NextFunction) =>{
 
 try {
-    const hotel = req.body;
+    const hotel = CreateHotelDTO.safeParse(req.body);
     //Validate the request
-
-    if(
-        !hotel.name || !hotel.location || !hotel.rating || !hotel.reviews || !hotel.image || !hotel.price || !hotel.description
-    ){
-        throw new ValidationError("Invalid hotel data");
+        
+    if(!hotel.success){
+        throw new ValidationError(hotel.error.message);
     }
 
     //Add hotel
     await Hotel.create({
-        name: hotel.name,
-        location: hotel.location,
-        reviews: parseInt(hotel.reviews),
-        rating: parseFloat(hotel.rating),
-        image: hotel.image,
-        price: parseInt(hotel.price),
-        description: hotel.description,
-    })
+        name: hotel.data.name,
+        location: hotel.data.location,
+        image: hotel.data.image,
+        price: parseInt(hotel.data.price),
+        description: hotel.data.description,
+    }); 
     
 
     res.status(201).json({
@@ -187,13 +185,13 @@ export const updateHotel = async(req : Request, res: Response, next: NextFunctio
 
     try {
         const hotelId = req.params.id;
-    const updatedHotel = req.body;
-    //Validate the request
 
-    if(
-        !updatedHotel.name || !updatedHotel.location || !updatedHotel.rating || !updatedHotel.reviews || !updatedHotel.image || !updatedHotel.price || !updatedHotel.description
-    ){
-        throw new ValidationError("Invalid hotel data");
+    //Validate the request
+    const updatedHotel = CreateHotelDTO.safeParse(req.body);
+    //Validate the request
+        
+    if(!updatedHotel.success){
+        throw new ValidationError(updatedHotel.error.message);
     }
 
 
@@ -206,5 +204,34 @@ export const updateHotel = async(req : Request, res: Response, next: NextFunctio
     } catch (error) {
         next(error);
     }
+
+}
+
+export const generateResponse = async(
+    req: Request,
+    res: Response,
+    next: NextFunction
+
+) =>{
+    const {prompt} =req.body;
+    
+    const client = new OpenAI({
+       apiKey: process.env.OPENAI_API_KEY,
+    });
+
+     const completion = await client.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [
+        {
+            role: "user",
+            content: prompt,
+        },
+    ],
+    store: true,
+});
+
+console.log(completion.choices[0].message);
+res.status(200).json({message: completion.choices[0].message});
+return;
 
 }

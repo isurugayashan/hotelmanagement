@@ -1,6 +1,10 @@
 //All the business logic inclde application folder
 import { NextFunction, Request, Response } from "express";
 import Booking from "../infrastructure/schemas/Booking";
+import { CreateBookinglDTO, UpdateBookinglDTO } from "../domian/dtos/booking";
+import ValidationError from "../domian/errors/validation-error";
+import { clerkClient } from "@clerk/express";
+import Hotel from "../infrastructure/schemas/Hotel";
 
 export const getAllBookings = async (req : Request, res: Response, next: NextFunction) =>{
     
@@ -19,8 +23,15 @@ export const  getBookingForHotel = async (req : Request, res: Response, next: Ne
    
    try {
     const hotelId = req.params.hotelId;
-    const bookings = await Booking.find( {hotelId} ).populate("userId");
-    res.status(200).json(bookings);
+    const bookings = await Booking.find( {hotelId} );
+    const bookingsWithUser = await Promise.all( bookings.map(async (el) =>{
+        const user = await clerkClient.users.getUser(el.userId);
+        console.log(user);
+        
+        //All user details  = ...el
+        return {_id:el.id,hotelId: el.hotelId, checkIn:el.checkIn, checkOut: el.checkOut,roomNumber: el.roomNumber, user:{id:user.id, firstName:user.firstName, lastName:user.lastName}}
+    }));
+    res.status(200).json(bookingsWithUser);
     
    } catch (error) {
     next(error);
@@ -29,30 +40,64 @@ export const  getBookingForHotel = async (req : Request, res: Response, next: Ne
    
 }
 
+export const getBookingForUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.params.userId;
+  
+      // Find all bookings for the given user
+      const bookings = await Booking.find({ userId });
+  
+      // Fetch both user and hotel details for each booking
+      const bookingsWithDetails = await Promise.all(
+        bookings.map(async (booking) => {
+          // Get user details from Clerk
+          const user = await clerkClient.users.getUser(booking.userId);
+          
+          // Get hotel details from the Hotel collection
+          const hotel = await Hotel.findById(booking.hotelId).select("name location"); // Select only required fields
+  
+          return {
+            _id: booking.id,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            roomNumber: booking.roomNumber,
+            hotel: hotel ? { id: hotel.id, name: hotel.name, location: hotel.location } : null,
+            user: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName
+            }
+          };
+        })
+      );
+  
+      res.status(200).json(bookingsWithDetails);
+    } catch (error) {
+      next(error);
+    }
+  };
+
 export const createBooking = async (req : Request, res: Response, next: NextFunction) =>{
 
   try {
     
-    const booking = req.body;
+    const booking = CreateBookinglDTO.safeParse(req.body);
    
     //Validate the request
 
-    if(
-        !booking.hotelId || !booking.userId || !booking.checkIn || !booking.checkOut || !booking.roomNumber
-    ){
-        res.status(400).json({
-            message: "Please enter all required fields",
-        });
-        return;
+    if (!booking.success) {
+        throw new ValidationError(booking.error.message);
     }
+
+    const user = req.auth;
 
     //Add Booking
     await Booking.create({
-        hotelId: booking.hotelId,
-        userId: booking.userId,  
-        checkIn: booking.checkIn, 
-        checkOut: booking.checkOut, 
-        roomNumber: booking.roomNumber
+        hotelId: booking.data.hotelId,
+        userId: user.userId,  
+        checkIn: booking.data.checkIn, 
+        checkOut: booking.data.checkOut, 
+        roomNumber: booking.data.roomNumber
     });
 
     res.status(201).json({
@@ -62,7 +107,6 @@ export const createBooking = async (req : Request, res: Response, next: NextFunc
   } catch (error) {
     next(error);
   }
-   
 }
 
 
@@ -92,15 +136,13 @@ export const updateBooking = async(req : Request, res: Response, next: NextFunct
     const updatedBooking = req.body;
     //Validate the request
 
-    if(
-        !updatedBooking.name || !updatedBooking.location || !updatedBooking.rating || !updatedBooking.reviews || !updatedBooking.image || !updatedBooking.price || !updatedBooking.description
-    ){
-        res.status(400).json({
-            message: "Please enter all required fields",
-        });
-        return;
-    }
+    const booking = UpdateBookinglDTO.safeParse(updatedBooking);
+   
+    //Validate the request
 
+    if (!booking.success) {
+        throw new ValidationError(booking.error.message);
+    }
 
     //update Booking
     await Booking.findByIdAndUpdate(BookingId, updatedBooking)

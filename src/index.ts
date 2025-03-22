@@ -2,13 +2,15 @@ import "dotenv/config"
 import express from  "express";
 import hotelsRouter from "./api/hotel";
 import connectDB from "./infrastructure/db";
-import usersRouter from "./api/user";
 import bookingsRouter from "./api/booking";
 import cors from "cors";
 import globalErrorHandlingMiddleware from "./api/middlewares/global-error-handling-middleware";
+import { clerkMiddleware } from "@clerk/express";
 
 
 const app = express();
+
+app.use(clerkMiddleware());
 
 //Midleware  replce the body parser
 app.use(express.json());
@@ -23,7 +25,6 @@ connectDB();
 // })
 
 app.use("/api/hotels",hotelsRouter)
-app.use("/api/users", usersRouter)
 app.use("/api/bookings", bookingsRouter)
 
 app.use(globalErrorHandlingMiddleware)
