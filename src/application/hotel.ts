@@ -5,6 +5,11 @@ import NotFoundError from "../domian/errors/not-found-error";
 import ValidationError from "../domian/errors/validation-error";
 import { CreateHotelDTO } from "../domian/dtos/hotel";
 import OpenAI from "openai";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
+import mongoose from "mongoose";
+import stripe from "../infrastructure/stripe";
+
 
 // const hotels = [
 //     {
@@ -140,21 +145,57 @@ export const createHotel = async (req : Request, res: Response, next: NextFuncti
 
 try {
     const hotel = CreateHotelDTO.safeParse(req.body);
+
+    
     //Validate the request
         
     if(!hotel.success){
         throw new ValidationError(hotel.error.message);
     }
 
+     // Create a product in Stripe
+     const stripeProduct = await stripe.products.create({
+        name: hotel.data.name,
+        description: hotel.data.description,
+        default_price_data: {
+          unit_amount: Math.round((hotel.data.price) * 100), // Convert to cents
+          currency: "usd",
+        },
+      });
+
+    const sharedId = new mongoose.Types.ObjectId();
+
     //Add hotel
     await Hotel.create({
+        _id: sharedId,
         name: hotel.data.name,
         location: hotel.data.location,
         image: hotel.data.image,
-        price: parseInt(hotel.data.price),
+        price: hotel.data.price,
         description: hotel.data.description,
+        stripePriceId: stripeProduct.default_price,
     }); 
     
+    const embeddingsModel = new OpenAIEmbeddings({
+        model: "text-embedding-ada-002",
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const vectorIndex = new MongoDBAtlasVectorSearch(embeddingsModel, {
+        collection: mongoose.connection.collection("hotelVectors"),
+        indexName: "vector_index"
+    });
+
+    // Create documents in the format expected by addDocuments
+    const documents = [{
+        pageContent: `${hotel.data.name} ${hotel.data.location} ${hotel.data.description}`,
+        metadata: {
+            _id: sharedId,   
+        }
+    }];
+    
+    // Now pass the properly formatted documents array
+    await vectorIndex.addDocuments(documents);
 
     res.status(201).json({
         message: "Hotel added successfully",
