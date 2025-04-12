@@ -1,9 +1,10 @@
 {
   "name": "5",
   "version": "1.0.0",
-  "scripts": {
+ "scripts": {
     "dev": "nodemon src/index.ts",
-    "start": "ts-node src/index.ts"
+    "build": "npm install && tsc",
+    "start": "node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
