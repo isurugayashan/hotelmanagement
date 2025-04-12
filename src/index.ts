@@ -16,7 +16,7 @@ const app = express();
 app.use(clerkMiddleware());
 
 // Middleware to parse JSON data in the request body
-app.use(cors({ origin: process.env.FRONTEND_URL }));
+app.use(cors({ origin: "https://aidf-horizone-frontend-isuru.netlify.app/"}));
 
 app.post(
   "/api/stripe/webhook",
@@ -42,5 +42,8 @@ app.use("/api/bookings", bookingsRouter)
 app.use("/api/payments", paymentsRouter);
 
 app.use(globalErrorHandlingMiddleware)
-app.listen(8000,() => console.log("server is running on 8000")
-)
+// Define the port to run the server
+connectDB();
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
