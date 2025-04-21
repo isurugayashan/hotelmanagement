@@ -13,16 +13,16 @@ import paymentsRouter from "./api/payment";
 
 const app = express();
 
-app.use(clerkMiddleware());
-
-//Midleware  replce the body parser
-app.use(express.json());
-
 // Middleware to parse JSON data in the request body
 app.use(cors({
   origin: "https://aidf-horizone-frontend-isuru.netlify.app",
   credentials: true, // Optional, only needed if using cookies or auth headers
 }));
+
+app.use(clerkMiddleware());
+
+//Midleware  replce the body parser
+app.use(express.json());
 
 app.post(
   "/api/stripe/webhook",
