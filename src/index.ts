@@ -15,6 +15,10 @@ const app = express();
 
 app.use(clerkMiddleware());
 
+//Midleware  replce the body parser
+app.use(express.json());
+app.use(cors())
+
 // Middleware to parse JSON data in the request body
 app.use(cors({ origin: "https://aidf-horizone-frontend-isuru.netlify.app/"}));
 
@@ -25,9 +29,7 @@ app.post(
 );
 
 
-//Midleware  replce the body parser
-app.use(express.json());
-app.use(cors())
+
 
 connectDB();
 

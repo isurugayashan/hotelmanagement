@@ -1,0 +1,1 @@
+{"version":3,"file":"frobidden-error.js","sourceRoot":"","sources":["../../../src/domian/errors/frobidden-error.ts"],"names":[],"mappings":";;AAAA,MAAM,cAAe,SAAQ,KAAK;IAC9B,YAAY,OAAe;QACvB,KAAK,CAAC,OAAO,CAAC,CAAC;QACf,IAAI,CAAC,IAAI,GAAG,gBAAgB,CAAC;IAEjC,CAAC;CACJ;AAED,kBAAe,cAAc,CAAC"}
