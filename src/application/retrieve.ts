@@ -8,7 +8,7 @@ export const  retrieve = async (req: Request, res: Response, next: NextFunction)
 
     try {
         const {query} = req.query;
-        console.log(query);
+        console.log("Search API hit. Query:", query);
         
         if (!query || query === "") {
             const hotels = (await Hotel.find()).map((hotel) => ({
