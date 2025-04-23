@@ -10,26 +10,13 @@ import { handleWebhook } from "./application/payment";
 import bodyParser from "body-parser";
 import paymentsRouter from "./api/payment";
 
+const app = express();
 
-const app = express()
-
-// Apply CORS middleware BEFORE any routes
-app.use(
-  cors({
-    origin: "https://aidf-horizone-frontend-isuru.netlify.app",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-)
-
-// For preflight requests
-app.options("*", cors())
-
-app.use(clerkMiddleware())
-
+app.use(clerkMiddleware());
 // Middleware to parse JSON data in the request body
-app.use(express.json())
+app.use(express.json());
+app.use(cors({ origin: "https://aidf-horizone-frontend-isuru.netlify.app" }));
+
 
 app.post("/api/stripe/webhook", bodyParser.raw({ type: "application/json" }), handleWebhook)
 
