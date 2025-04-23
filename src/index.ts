@@ -17,7 +17,7 @@ app.use(clerkMiddleware());
 app.use(express.json());
 app.use(cors({ origin: "https://aidf-horizone-frontend-isuru.netlify.app" }));
 
-app.post("/api/stripe/webhook", bodyParser.raw({ type: "application/json" }), handleWebhook)
+// app.post("/api/stripe/webhook", bodyParser.raw({ type: "application/json" }), handleWebhook)
 
 connectDB()
 
