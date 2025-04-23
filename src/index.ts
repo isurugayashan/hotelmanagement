@@ -22,7 +22,7 @@ app.post("/api/stripe/webhook", bodyParser.raw({ type: "application/json" }), ha
 
 connectDB()
 
-app.use("/api/hotels", hotelsRouter)
+// app.use("/api/hotels", hotelsRouter)
 app.use("/api/bookings", bookingsRouter)
 app.use("/api/payments", paymentsRouter)
 
