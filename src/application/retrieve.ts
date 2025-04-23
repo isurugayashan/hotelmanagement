@@ -7,9 +7,6 @@ import mongoose from "mongoose";
 export const  retrieve = async (req: Request, res: Response, next: NextFunction) =>{
 
     try {
-        res.header("Access-Control-Allow-Origin", "https://aidf-horizone-frontend-isuru.netlify.app")
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         const {query} = req.query;
         if (!query || query === "") {
             const hotels = (await Hotel.find()).map((hotel) => ({
