@@ -15,7 +15,7 @@ const app = express();
 app.use(clerkMiddleware());
 // Middleware to parse JSON data in the request body
 app.use(express.json());
-app.use(cors({ origin: "https://aidf-horizone-frontend-isuru.netlify.app/" }));
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 // app.post("/api/stripe/webhook", bodyParser.raw({ type: "application/json" }), handleWebhook)
 
