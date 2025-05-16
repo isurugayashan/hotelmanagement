@@ -7,75 +7,43 @@ import Hotel from "../infrastructure/schemas/Hotel";
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 const FRONTEND_URL = process.env.FRONTEND_URL as string;
 
-// async function fulfillCheckout(sessionId: string) {
-//   // Set your secret key. Remember to switch to your live secret key in production.
-//   // See your keys here: https://dashboard.stripe.com/apikeys
-//   console.log("Fulfilling Checkout Session " + sessionId);
-
-//   // TODO: Make this function safe to run multiple times,
-//   // even concurrently, with the same session ID
-
-//   // TODO: Make sure fulfillment hasn't already been
-//   // peformed for this Checkout Session
-
-//   // Retrieve the Checkout Session from the API with line_items expanded
-//   const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId, {
-//     expand: ["line_items"],
-//   });
-//   console.log(
-//     util.inspect(checkoutSession, false, null, true /* enable colors */)
-//   );
-
-//   const booking = await Booking.findById(checkoutSession.metadata?.bookingId);
-//   if (!booking) {
-//     throw new Error("Booking not found");
-//   }
-
-//   if (booking.paymentStatus !== "PENDING") {
-//     throw new Error("Payment is not pending");
-//   }
-
-//   // Check the Checkout Session's payment_status property
-//   // to determine if fulfillment should be peformed
-//   if (checkoutSession.payment_status !== "unpaid") {
-//     // TODO: Perform fulfillment of the line items
-//     // TODO: Record/save fulfillment status for this
-//     // Checkout Session
-//     await Booking.findByIdAndUpdate(booking._id, {
-//       paymentStatus: "PAID",
-//     });
-//   }
-// }
-
 async function fulfillCheckout(sessionId: string) {
+  // Set your secret key. Remember to switch to your live secret key in production.
+  // See your keys here: https://dashboard.stripe.com/apikeys
   console.log("Fulfilling Checkout Session " + sessionId);
 
-  // Retrieve the Checkout Session from the API
+  // TODO: Make this function safe to run multiple times,
+  // even concurrently, with the same session ID
+
+  // TODO: Make sure fulfillment hasn't already been
+  // peformed for this Checkout Session
+
+  // Retrieve the Checkout Session from the API with line_items expanded
   const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId, {
     expand: ["line_items"],
   });
-  
+  console.log(
+    util.inspect(checkoutSession, false, null, true /* enable colors */)
+  );
+
   const booking = await Booking.findById(checkoutSession.metadata?.bookingId);
   if (!booking) {
     throw new Error("Booking not found");
-  }
-
-  // Make this function safe to run multiple times by checking payment status
-  if (booking.paymentStatus === "PAID") {
-    console.log("Payment already processed for booking:", booking._id);
-    return; // Already processed, exit early
   }
 
   if (booking.paymentStatus !== "PENDING") {
     throw new Error("Payment is not pending");
   }
 
-  // Only update if payment is complete
-  if (checkoutSession.payment_status === "paid") {
+  // Check the Checkout Session's payment_status property
+  // to determine if fulfillment should be peformed
+  if (checkoutSession.payment_status !== "unpaid") {
+    // TODO: Perform fulfillment of the line items
+    // TODO: Record/save fulfillment status for this
+    // Checkout Session
     await Booking.findByIdAndUpdate(booking._id, {
       paymentStatus: "PAID",
     });
-    console.log("Payment marked as PAID for booking:", booking._id);
   }
 }
 
@@ -152,8 +120,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 };
 
 export const retrieveSessionStatus = async (req: Request, res: Response) => {
-  try {
-    const checkoutSession = await stripe.checkout.sessions.retrieve(
+  const checkoutSession = await stripe.checkout.sessions.retrieve(
     req.query.session_id as string
   );
 
@@ -174,35 +141,4 @@ export const retrieveSessionStatus = async (req: Request, res: Response) => {
     customer_email: checkoutSession.customer_details?.email,
     paymentStatus: booking.paymentStatus,
   });
-  } catch (error) {
-    console.error("Error retrieving session status:", error);
-    res.status(500).json({ 
-      error: "Failed to retrieve session status",
-      details: error instanceof Error ? error.message : String(error)
-    });
-  }
 };
-
-// export const retrieveSessionStatus = async (req: Request, res: Response) => {
-//   const checkoutSession = await stripe.checkout.sessions.retrieve(
-//     req.query.session_id as string
-//   );
-
-//   const booking = await Booking.findById(checkoutSession.metadata?.bookingId);
-//   if (!booking) {
-//     throw new Error("Booking not found");
-//   }
-//   const hotel = await Hotel.findById(booking.hotelId);
-//   if (!hotel) {
-//     throw new Error("Hotel not found");
-//   }
-
-//   res.status(200).json({
-//     bookingId: booking._id,
-//     booking: booking,
-//     hotel: hotel,
-//     status: checkoutSession.status,
-//     customer_email: checkoutSession.customer_details?.email,
-//     paymentStatus: booking.paymentStatus,
-//   });
-// };
