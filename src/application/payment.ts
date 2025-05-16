@@ -37,14 +37,19 @@ async function fulfillCheckout(sessionId: string) {
 
   // Check the Checkout Session's payment_status property
   // to determine if fulfillment should be peformed
-  if (checkoutSession.payment_status !== "unpaid") {
-    // TODO: Perform fulfillment of the line items
-    // TODO: Record/save fulfillment status for this
-    // Checkout Session
-    await Booking.findByIdAndUpdate(booking._id, {
-      paymentStatus: "PAID",
-    });
-  }
+ if (checkoutSession.payment_status === "paid") {
+  await Booking.findByIdAndUpdate(booking._id, {
+    paymentStatus: "PAID",
+  });
+}
+//  {
+//     // TODO: Perform fulfillment of the line items
+//     // TODO: Record/save fulfillment status for this
+//     // Checkout Session
+//     await Booking.findByIdAndUpdate(booking._id, {
+//       paymentStatus: "PAID",
+//     });
+//   }
 }
 
 export const handleWebhook = async (req: Request, res: Response) => {
@@ -60,7 +65,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
       event.type === "checkout.session.async_payment_succeeded"
     ) {
       await fulfillCheckout(event.data.object.id);
-
+console.log("Webhook fulfillment completed.");
       res.status(200).send();
       return;
     }
