@@ -153,32 +153,27 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
 export const retrieveSessionStatus = async (req: Request, res: Response) => {
   try {
-    const sessionId = req.query.session_id as string;
-    
-    if (!sessionId) {
-      return res.status(400).json({ error: "Missing session_id parameter" });
-    }
-    
-    const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
-    
-    const booking = await Booking.findById(checkoutSession.metadata?.bookingId);
-    if (!booking) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
-    
-    const hotel = await Hotel.findById(booking.hotelId);
-    if (!hotel) {
-      return res.status(404).json({ error: "Hotel not found" });
-    }
+    const checkoutSession = await stripe.checkout.sessions.retrieve(
+    req.query.session_id as string
+  );
 
-    res.status(200).json({
-      bookingId: booking._id,
-      booking: booking,
-      hotel: hotel,
-      status: checkoutSession.status,
-      customer_email: checkoutSession.customer_details?.email,
-      paymentStatus: booking.paymentStatus,
-    });
+  const booking = await Booking.findById(checkoutSession.metadata?.bookingId);
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+  const hotel = await Hotel.findById(booking.hotelId);
+  if (!hotel) {
+    throw new Error("Hotel not found");
+  }
+
+  res.status(200).json({
+    bookingId: booking._id,
+    booking: booking,
+    hotel: hotel,
+    status: checkoutSession.status,
+    customer_email: checkoutSession.customer_details?.email,
+    paymentStatus: booking.paymentStatus,
+  });
   } catch (error) {
     console.error("Error retrieving session status:", error);
     res.status(500).json({ 
