@@ -92,7 +92,7 @@ export const createBooking = async (req : Request, res: Response, next: NextFunc
     const user = req.auth;
 
     //Add Booking
-    await Booking.create({
+     const newBooking = await Booking.create({
         hotelId: booking.data.hotelId,
         userId: user.userId,  
         checkIn: booking.data.checkIn, 
@@ -100,9 +100,7 @@ export const createBooking = async (req : Request, res: Response, next: NextFunc
         roomNumber: booking.data.roomNumber
     });
 
-    res.status(201).json({
-        message: "Booking added successfully",
-    });
+      res.status(201).json(newBooking);
 
   } catch (error) {
     next(error);
