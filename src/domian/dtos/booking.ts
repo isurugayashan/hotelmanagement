@@ -7,6 +7,8 @@ export const CreateBookinglDTO = z.object({
     checkIn: z.string(),
     checkOut: z.string(),
     roomNumber: z.number(),
+    paymentStatus: z.enum(["PENDING", "PAID"]).default("PENDING"),
+  paymentMethod: z.enum(["CARD", "BANK_TRANSFER"]).default("CARD")
 
 });
 
