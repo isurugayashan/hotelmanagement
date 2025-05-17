@@ -112,18 +112,15 @@ import stripe from "../infrastructure/stripe";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve , ms));
 
-export const getAllHotels = async (req : Request, res: Response, next: NextFunction) =>{
-    
-    try {
-        
-    const hotels = await Hotel.find({})
-    // await sleep(5000);
+export const getAllHotels = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const hotels = await Hotel.find({}).sort({ price: 1 }); // Sort price ascending
     res.status(200).json(hotels);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    } catch (error) {
-        next(error);
-    }
-}
 
 
 export const getHotelById = async (req : Request, res: Response , next: NextFunction) =>{
