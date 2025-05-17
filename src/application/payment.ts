@@ -30,6 +30,8 @@ async function fulfillCheckout(sessionId: string) {
   if (!booking) {
     throw new Error("Booking not found");
   }
+  console.log(booking.paymentStatus);
+  
 
   if (booking.paymentStatus !== "PENDING") {
     throw new Error("Payment is not pending");
