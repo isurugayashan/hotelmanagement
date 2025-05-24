@@ -61,6 +61,7 @@ export const getBookingForUser = async (req: Request, res: Response, next: NextF
             checkIn: booking.checkIn,
             checkOut: booking.checkOut,
             roomNumber: booking.roomNumber,
+            paymentStatus: booking.paymentStatus,
             hotel: hotel ? { id: hotel.id, name: hotel.name, location: hotel.location } : null,
             user: {
               id: user.id,
